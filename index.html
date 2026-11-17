@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shakiba Hamedi</title>
+<meta name="description" content="Shakiba Hamedi, computational biologist in Pavia, Italy. RNA-seq, variant annotation, transposable elements, reproducible Nextflow workflows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Vazirmatn:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one left-aligned column read like a genome browser: a pileup band under the
+   name, the career drawn as interval tracks on a year axis, projects as pipeline steps. */
+:root{
+  color-scheme:dark;
+  --bg:#0b1820;
+  --surface:#11242f;
+  --surface-2:#16303d;
+  --line:#234452;
+  --text:#e7eff1;
+  --muted:#93aab3;
+  --accent:#4fd1c5;
+  --base-a:#62c482;
+  --base-c:#5fa8ee;
+  --base-g:#f0b84a;
+  --base-t:#ee736f;
+  --font-display:"Bricolage Grotesque","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --wrap:1040px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+html[lang="ar"] body{font-size:18px;line-height:1.85}
+html[lang="fa"] body{font-size:17px;line-height:1.95;font-family:Vazirmatn,"IBM Plex Sans Arabic",system-ui,sans-serif}
+html[lang="fa"] h1,html[lang="fa"] h2,html[lang="fa"] h3{font-family:Vazirmatn,"IBM Plex Sans Arabic",system-ui,sans-serif}
+html[lang="ar"] *,html[lang="fa"] *{letter-spacing:0 !important}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] h1.ltr,html[dir="rtl"] h3.ltr{text-align:right}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:10;background:rgba(11,24,32,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.mark{font-family:var(--font-mono);font-size:14px;color:var(--accent);text-decoration:none;margin-inline-end:auto}
+.nav{display:flex;gap:20px;flex-wrap:wrap}
+.nav a{font-size:14.5px;color:var(--muted);text-decoration:none}
+.nav a:hover{color:var(--text)}
+.langs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.langs button{font:500 13px var(--font-mono);background:transparent;color:var(--muted);border:0;padding:7px 11px;cursor:pointer}
+.langs button+button{border-inline-start:1px solid var(--line)}
+.langs button[aria-pressed="true"]{background:var(--accent);color:#062025}
+.langs button:hover:not([aria-pressed="true"]){color:var(--text);background:var(--surface)}
+
+/* hero */
+.hero{padding:72px 0 0}
+.eyebrow{font:500 13px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(44px,8.5vw,92px);line-height:1;letter-spacing:-.02em;margin:0 0 24px;text-wrap:balance}
+.lead{font-size:clamp(18px,2.2vw,21px);max-width:62ch;margin:0 0 28px;color:var(--text)}
+.meta{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:30px;font-size:14.5px;color:var(--muted)}
+.avail{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:5px 14px}
+.avail::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--base-a)}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;font:500 15px var(--font-body);text-decoration:none;border-radius:8px;padding:11px 18px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#062025;font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.pileup{margin-top:56px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface)}
+.pileup canvas{display:block;width:100%;height:150px}
+
+/* sections */
+section{padding:80px 0 0}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:32px}
+.sec-head h2{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0;text-wrap:balance}
+.sec-head::after{content:"";flex:1;height:1px;background:var(--line)}
+h3{font-family:var(--font-display);font-weight:500;font-size:21px;line-height:1.25;margin:0;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--muted)}
+
+.about{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px}
+.about .prose{display:grid;gap:18px;max-width:65ch;align-content:start}
+.facts{margin:0;display:grid;gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);align-self:start}
+.facts div{padding:14px 18px;display:grid;gap:2px}
+.facts div+div{border-top:1px solid var(--line)}
+.facts dt{font:500 12px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;font-size:15.5px}
+
+.help{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:40px}
+.help article{padding:22px;display:grid;gap:8px;align-content:start;border-inline-end:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.help article::before{content:"";width:28px;height:4px;border-radius:2px;background:var(--c)}
+.help h3{font-size:18px}
+.help p{font-size:15px;color:var(--muted)}
+
+/* projects */
+.projects{display:grid;gap:20px}
+.project{border:1px solid var(--line);border-inline-start:4px solid var(--c);border-radius:12px;background:var(--surface);padding:26px 28px;display:grid;gap:14px}
+.project header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.tag{font:500 12px var(--font-mono);border:1px solid var(--base-g);color:var(--base-g);border-radius:999px;padding:2px 10px}
+.project p{max-width:70ch;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;direction:ltr;list-style:none;margin:4px 0 0;padding:0}
+html[dir="rtl"] .flow{justify-content:flex-end}
+.flow li{font:400 13px var(--font-mono);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 10px;color:var(--text)}
+.flow li.arrow{background:none;border:0;padding:0;color:var(--c)}
+
+/* toolkit */
+.kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:28px 40px}
+.kit h3{font:500 13px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+html[lang="ar"] .kit h3,html[lang="fa"] .kit h3{font-family:var(--font-body);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;direction:ltr;list-style:none;margin:0;padding:0}
+html[dir="rtl"] .chips{justify-content:flex-end}
+.chips li{font:400 13.5px var(--font-mono);border:1px solid var(--line);border-radius:6px;padding:4px 10px;background:var(--surface)}
+
+/* path tracks */
+.tracks{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:22px 24px 16px}
+.axis{display:flex;justify-content:space-between;font:400 12px var(--font-mono);color:var(--muted);font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:14px}
+.track{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin-bottom:14px}
+.track-label{font:500 12px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+html[lang="ar"] .track-label,html[lang="fa"] .track-label{font-family:var(--font-body);font-size:14px}
+.lane{position:relative;height:16px;background:repeating-linear-gradient(to right,transparent 0,transparent calc(10% - 1px),var(--line) calc(10% - 1px),var(--line) 10%)}
+.bar{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--c);inset-inline-start:var(--s);width:var(--w)}
+.bar.open{border-start-end-radius:0;border-end-end-radius:0;background:linear-gradient(to right,var(--c) 70%,transparent)}
+html[dir="rtl"] .bar.open{background:linear-gradient(to left,var(--c) 70%,transparent)}
+.stops{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px}
+.stop{display:grid;gap:6px;align-content:start;padding-inline-start:16px;border-inline-start:3px solid var(--c)}
+.stop .when{font:400 13px var(--font-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.stop .role{color:var(--text);font-weight:500}
+.stop ul{margin:4px 0 0;padding-inline-start:18px;color:var(--muted);font-size:15.5px;display:grid;gap:4px}
+
+.langlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:40px}
+.langlist div{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--surface)}
+.dots{display:flex;gap:5px;direction:ltr}
+.dots i{width:9px;height:9px;transform:rotate(45deg);border:1px solid var(--accent)}
+.dots i.on{background:var(--accent)}
+
+/* github */
+.repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px}
+.repo{display:grid;gap:4px;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.repo:hover{border-color:var(--accent)}
+.repo b{font:500 14.5px var(--font-mono);color:var(--accent);overflow-wrap:anywhere}
+.repo span{font-size:14px;color:var(--muted)}
+
+/* contact */
+.contact{margin-top:80px;border-top:1px solid var(--line);background:var(--surface)}
+.contact .wrap{padding-top:64px;padding-bottom:64px;display:grid;gap:22px}
+.contact h2{font-family:var(--font-display);font-weight:700;font-size:clamp(32px,5.5vw,56px);line-height:1.05;margin:0;text-wrap:balance}
+.contact p{max-width:58ch;color:var(--muted)}
+.mail{font:500 clamp(15px,2.6vw,20px) var(--font-mono);color:var(--accent);overflow-wrap:anywhere}
+footer{border-top:1px solid var(--line)}
+footer .wrap{padding-top:20px;padding-bottom:28px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;font-size:13.5px;color:var(--muted)}
+
+@media (max-width:760px){
+  .about{grid-template-columns:minmax(0,1fr)}
+  .nav{display:none}
+  .hero{padding-top:48px}
+  section{padding-top:60px}
+  .project{padding:20px}
+  .pileup canvas{height:110px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* professional light theme: warm paper, one deep teal accent, hairline rules, restrained type */
+:root{color-scheme:light;
+  --bg:#fbfafc;--surface:#ffffff;--surface-2:#f2f1f7;--line:#e5e3ee;--edge:#dcd9e8;
+  --text:#1e2236;--muted:#5d6177;--accent:#b03a6e;--accent-soft:#fbedf3;--blue:#2f5da6;
+  --base-a:#b03a6e;--base-c:#2f5da6;--base-t:#d4769e;--base-g:#6d8cca;
+  --font-display:"IBM Plex Sans","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif}
+body{font-size:16.5px}
+:focus-visible{outline-color:var(--accent)}
+.top{background:rgba(251,250,252,.94);border-bottom:1px solid var(--line)}
+.mark{color:var(--text);font-weight:500}
+.nav a:hover{color:var(--accent)}
+.langs{border:1px solid var(--edge);border-radius:6px;background:#fff;overflow:hidden}
+.langs button+button{border-inline-start:1px solid var(--edge)}
+.langs button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.langs button:hover:not([aria-pressed="true"]){background:var(--surface-2);color:var(--text)}
+
+.hero{padding:88px 0 0}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:72px;align-items:center}
+.eyebrow{display:block;background:none;border:0;border-radius:0;padding:0;margin-bottom:16px;
+  font:500 13px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+html[lang="ar"] .eyebrow,html[lang="fa"] .eyebrow{font:500 15px var(--font-body);letter-spacing:0}
+h1{font-weight:600;font-size:clamp(38px,6vw,62px);letter-spacing:-.02em;margin-bottom:20px}
+.lead{font-size:clamp(17px,2vw,19.5px);color:var(--muted);max-width:56ch}
+.photo{aspect-ratio:4/5;border-radius:8px;border:1px solid var(--edge);background:var(--surface-2);
+  box-shadow:none;transform:none;display:grid;place-items:center;overflow:hidden;
+  font:500 44px var(--font-display);letter-spacing:.04em;color:var(--muted)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.avail{background:var(--accent-soft);border:1px solid #efcfdf;color:var(--accent);font-weight:500}
+.avail::before{background:var(--accent)}
+.btn{background:#fff;border:1px solid var(--edge);border-radius:6px;box-shadow:none;
+  transition:border-color .12s,background .12s}
+.btn:hover{border-color:var(--accent);background:var(--surface-2);transform:none;box-shadow:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#8e2d58;border-color:#8e2d58}
+
+section{padding-top:92px}
+.sec-head{align-items:center;margin-bottom:36px}
+.sec-head::after{display:block;background:var(--line)}
+.sec-head h2{padding:0;background:none;font:500 12.5px var(--font-mono);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted)}
+html[lang="ar"] .sec-head h2,html[lang="fa"] .sec-head h2{font:500 17px var(--font-body);letter-spacing:0}
+h3{font-weight:600}
+
+.facts{border:0;border-top:1px solid var(--line);border-radius:0;background:none}
+.facts div{padding:14px 0;border-top:0}
+.facts div+div{border-top:1px solid var(--line)}
+
+.help{grid-template-columns:repeat(4,minmax(0,1fr));border:0;border-radius:0;overflow:visible;gap:32px;margin-top:64px}
+.help article{border:0;border-top:2px solid var(--c);border-radius:0;margin:0;padding:18px 0 0;background:none}
+.help article::before{display:none}
+.help h3{font-size:17px}
+.help p{color:var(--muted);font-size:14.8px}
+
+.projects{gap:0}
+.project{background:none;border:0;border-top:1px solid var(--line);border-radius:0;
+  border-inline-start:0;box-shadow:none;padding:30px 0}
+.project:last-child{border-bottom:1px solid var(--line)}
+.project h3{font-size:21px}
+.tag{background:var(--accent-soft);border:1px solid #efcfdf;color:var(--accent)}
+.flow li{background:#fff;border:1px solid var(--edge);border-radius:4px;color:var(--muted)}
+.flow li.arrow{color:var(--muted)}
+.chips li{background:#fff;border:1px solid var(--edge);border-radius:4px;padding:4px 10px}
+.kit h3{color:var(--blue)}
+
+.tracks{background:none;border:0;border-radius:0;padding:0}
+.axis{color:var(--muted)}
+.lane{height:8px;background:var(--surface-2)}
+.bar,.bar.open,html[dir="rtl"] .bar.open{background:var(--c);border:0;border-radius:4px;box-shadow:none}
+.stop{border-inline-start-width:2px}
+.langlist{grid-template-columns:minmax(0,1fr);gap:0;border-top:1px solid var(--line)}
+.langlist div{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:14px 4px}
+.dots i{border:1px solid var(--blue)}
+.dots i.on{background:var(--blue)}
+
+.contact{margin-top:96px;background:var(--surface-2);border-top:1px solid var(--line);color:var(--text)}
+.contact h2{font-weight:600}
+.contact p{color:var(--muted)}
+.contact .mail{color:var(--blue)}
+.contact .btn{background:#fff;border-color:var(--edge);color:var(--text)}
+.contact .btn:hover{border-color:var(--accent);background:var(--bg)}
+.contact .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.contact .btn.primary:hover{background:#8e2d58;border-color:#8e2d58}
+footer{background:none;border-top:1px solid var(--line)}
+
+@media (max-width:1000px){.help{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .hero{padding-top:48px}
+  .hero-grid{grid-template-columns:minmax(0,1fr);gap:28px}
+  .photo{width:124px;order:-1;font-size:30px;box-shadow:none;border-radius:8px}
+  section{padding-top:64px}
+  .help{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
+}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <a class="mark ltr" href="#top">shakiba.hamedi</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#about" data-i18n="nav.about">About</a>
+      <a href="#projects" data-i18n="nav.projects">Projects</a>
+      <a href="#toolkit" data-i18n="nav.toolkit">Toolkit</a>
+      <a href="#path" data-i18n="nav.path">Path</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+    </nav>
+    <div class="langs" role="group" aria-label="Language">
+      <button type="button" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" id="lang-it" data-lang="it" aria-pressed="false">IT</button>
+      <button type="button" id="lang-ar" data-lang="ar" aria-pressed="false" style="font-family:var(--font-body)">عربي</button>
+      <button type="button" id="lang-fa" data-lang="fa" aria-pressed="false" style="font-family:Vazirmatn,sans-serif">فارسی</button>
+    </div>
+  </div>
+</div>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+      <p class="eyebrow" data-i18n="hero.eyebrow">Computational biologist</p>
+      <h1 class="ltr">Shakiba Hamedi</h1>
+      <p class="lead" data-i18n="hero.lead">I turn genomics and transcriptomics into results a lab can rely on: RNA-seq, variant annotation and transposable element analysis, built as reproducible workflows.</p>
+      <div class="meta">
+        <span class="avail" data-i18n="hero.avail">Open to roles and freelance projects</span>
+        <span data-i18n="hero.loc">Pavia, Italy</span>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="#contact" data-i18n="hero.cta">Get in touch</a>
+        <a class="btn" href="Shakiba-Hamedi-CV.pdf" target="_blank" rel="noopener" data-i18n="cv">Download CV (PDF)</a>
+        <a class="btn" href="https://github.com/shakibahamedi" rel="noopener">GitHub</a>
+        <a class="btn" href="https://www.linkedin.com/in/shakiba-hamedi-6ab334360/" rel="noopener">LinkedIn</a>
+      </div>
+      </div>
+      <div class="photo"><img src="shakiba.jpg" alt="Shakiba Hamedi" width="544" height="680"></div>
+    </div>
+  </div>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head"><h2 data-i18n="about.title">About</h2></div>
+      <div class="about">
+        <div class="prose">
+          <p data-i18n="about.p1">I'm a computational biologist with experience in RNA-seq, variant annotation, transposable element analysis and reproducible workflows. I mainly work with R/Bioconductor, Nextflow, Bash, BEDTools and Google Cloud, with a focus on transcriptomics and computational genomics.</p>
+          <p class="muted" data-i18n="about.p2">I started at the bench, with cell culture, PCR and HPLC quality control, before moving to the command line. I know where the data comes from, and what the biology needs from the analysis.</p>
+        </div>
+        <dl class="facts">
+          <div><dt data-i18n="facts.based.k">Based in</dt><dd data-i18n="facts.based.v">Pavia, Italy</dd></div>
+          <div><dt data-i18n="facts.study.k">Studying</dt><dd data-i18n="facts.study.v">MSc in Molecular Biology and Genetics, Digital Genetics track, Università di Pavia</dd></div>
+          <div><dt data-i18n="facts.focus.k">Focus</dt><dd data-i18n="facts.focus.v">Transcriptomics and computational genomics</dd></div>
+          <div><dt data-i18n="facts.open.k">Available for</dt><dd data-i18n="facts.open.v">Positions, research collaborations and freelance analysis</dd></div>
+        </dl>
+      </div>
+
+      <div class="help">
+        <article style="--c:var(--base-a)">
+          <h3 data-i18n="help.1.t">RNA-seq analysis</h3>
+          <p data-i18n="help.1.d">From raw reads to differential expression with nf-core/rnaseq, Salmon and DESeq2, plus enrichment with clusterProfiler.</p>
+        </article>
+        <article style="--c:var(--base-c)">
+          <h3 data-i18n="help.2.t">Variant annotation</h3>
+          <p data-i18n="help.2.d">VCF processing with nf-core/sarek and annotation with VEP, SnpEff and AlphaMissense, using resources such as ClinVar and gnomAD.</p>
+        </article>
+        <article style="--c:var(--base-g)">
+          <h3 data-i18n="help.3.t">Reproducible pipelines</h3>
+          <p data-i18n="help.3.d">Nextflow workflows under Git version control, run locally or on Google Cloud Compute Engine.</p>
+        </article>
+        <article style="--c:var(--base-t)">
+          <h3 data-i18n="help.4.t">Clear reports</h3>
+          <p data-i18n="help.4.d">Quarto and R Markdown reports in HTML or PDF, with ggplot2 figures ready to share.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="wrap">
+      <div class="sec-head"><h2 data-i18n="proj.title">Projects</h2></div>
+      <div class="projects">
+        <article class="project" style="--c:var(--base-c)">
+          <header><h3 data-i18n="proj.1.t">Integrated genomics and transcriptomics analysis</h3></header>
+          <p data-i18n="proj.1.d">A reproducible workflow that combines RNA-seq processing with variant annotation using VEP, SnpEff and AlphaMissense. Genomic and gene-expression data come together in one structured Quarto report, so the results are easy to interpret.</p>
+          <ul class="flow"><li>RNA-seq</li><li class="arrow">+</li><li>VCF</li><li class="arrow">→</li><li>VEP</li><li>SnpEff</li><li>AlphaMissense</li><li class="arrow">→</li><li>Quarto</li></ul>
+        </article>
+        <article class="project" style="--c:var(--base-g)">
+          <header><h3 data-i18n="proj.2.t">Transposable elements in lncRNAs</h3><span class="tag" data-i18n="proj.ongoing">In progress</span></header>
+          <p data-i18n="proj.2.d">Analysis of transposable elements inside lncRNA regions: genomic interval overlaps, BED/GTF/GFF annotation processing and the distribution of TEs across non-coding RNA loci.</p>
+          <ul class="flow"><li>BED / GTF / GFF</li><li class="arrow">→</li><li>RepeatMasker</li><li class="arrow">→</li><li>BEDTools</li><li class="arrow">→</li><li>GenomicRanges</li></ul>
+        </article>
+        <article class="project" style="--c:var(--base-a)">
+          <header><h3 data-i18n="proj.3.t">Reproducible NGS and ML pipeline with Nextflow</h3></header>
+          <p data-i18n="proj.3.d">A Nextflow workflow for statistical modelling and machine learning in R. It compares linear regression, random forest and KNN models automatically using RMSE, R² and MAE, and reports hypothesis tests and variable importance.</p>
+          <ul class="flow"><li>Nextflow</li><li class="arrow">→</li><li>LM</li><li>Random forest</li><li>KNN</li><li class="arrow">→</li><li>RMSE · R² · MAE</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="toolkit">
+    <div class="wrap">
+      <div class="sec-head"><h2 data-i18n="kit.title">Toolkit</h2></div>
+      <div class="kit">
+        <div><h3 data-i18n="kit.core">Languages and platforms</h3>
+          <ul class="chips"><li>R / RStudio</li><li>Python</li><li>Bash</li><li>Nextflow</li><li>Git / GitHub</li><li>Google Cloud Platform</li><li>Compute Engine</li><li>HPC / Slurm</li></ul></div>
+        <div><h3 data-i18n="kit.pkgs">R and Python packages</h3>
+          <ul class="chips"><li>tidyverse</li><li>tidymodels</li><li>DESeq2</li><li>tximport</li><li>clusterProfiler</li><li>VariantAnnotation</li><li>GenomicRanges</li><li>IRanges</li><li>rtracklayer</li><li>pandas</li><li>seaborn</li><li>matplotlib</li><li>pybedtools</li></ul></div>
+        <div><h3 data-i18n="kit.rna">RNA-seq</h3>
+          <ul class="chips"><li>nf-core/rnaseq</li><li>Salmon</li><li>Differential expression</li></ul></div>
+        <div><h3 data-i18n="kit.var">Variant analysis</h3>
+          <ul class="chips"><li>nf-core/sarek</li><li>VCF</li><li>SnpEff</li><li>VEP</li><li>AlphaMissense</li></ul></div>
+        <div><h3 data-i18n="kit.te">Transposable elements</h3>
+          <ul class="chips"><li>RepeatMasker</li><li>BEDTools</li><li>pybedtools</li><li>GenomicRanges</li></ul></div>
+        <div><h3 data-i18n="kit.viz">Visualisation and reporting</h3>
+          <ul class="chips"><li>ggplot2</li><li>GGally</li><li>cowplot</li><li>Quarto</li><li>R Markdown</li></ul></div>
+        <div style="grid-column:1/-1"><h3 data-i18n="kit.db">Databases and resources</h3>
+          <ul class="chips"><li>NCBI / GenBank</li><li>Ensembl</li><li>Franklin</li><li>UniProt</li><li>GEO / SRA</li><li>ClinVar</li><li>gnomAD</li><li>GWAS Catalog</li><li>KEGG</li><li>Reactome</li><li>TCGA</li><li>FANTOM</li><li>ENCODE</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="path">
+    <div class="wrap">
+      <div class="sec-head"><h2 data-i18n="path.title">Path</h2></div>
+      <div class="tracks">
+        <div class="axis ltr-digits"><span>2017</span><span>2019</span><span>2021</span><span>2023</span><span>2025</span><span>2027</span></div>
+        <div class="track">
+          <span class="track-label" data-i18n="path.edu">Education</span>
+          <div class="lane">
+            <span class="bar" style="--c:var(--base-c);--s:7.5%;--w:42.9%"></span>
+            <span class="bar open" style="--c:var(--accent);--s:78.3%;--w:20.5%"></span>
+          </div>
+        </div>
+        <div class="track">
+          <span class="track-label" data-i18n="path.work">Laboratory work</span>
+          <div class="lane">
+            <span class="bar" style="--c:var(--base-g);--s:20%;--w:20%"></span>
+            <span class="bar" style="--c:var(--base-t);--s:60%;--w:10%"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stops">
+        <div class="stop" style="--c:var(--accent)">
+          <span class="when" data-i18n="path.1.when">Nov 2024 to present</span>
+          <h3 class="ltr">Università di Pavia</h3>
+          <p class="role" data-i18n="path.1.role">Master's degree in Molecular Biology and Genetics, Digital Genetics track</p>
+        </div>
+        <div class="stop" style="--c:var(--base-t)">
+          <span class="when">2023 – 2024</span>
+          <h3 data-i18n="path.2.org">Dr. Abidi Pharmaceuticals, Tehran</h3>
+          <p class="role" data-i18n="path.2.role">Laboratory technician</p>
+          <ul>
+            <li data-i18n="path.2.a">Quality control of pharmaceutical products with HPLC and HPLC-MS</li>
+            <li data-i18n="path.2.b">Chemical and medicinal assays under GMP protocols</li>
+          </ul>
+        </div>
+        <div class="stop" style="--c:var(--base-g)">
+          <span class="when">2019 – 2021</span>
+          <h3 data-i18n="path.3.org">Shahid Beheshti University, Tehran</h3>
+          <p class="role" data-i18n="path.3.role">Laboratory assistant</p>
+          <ul>
+            <li data-i18n="path.3.a">Breast cancer cell culture experiments and ongoing breast cancer research</li>
+            <li data-i18n="path.3.b">Molecular techniques including PCR, Western and Southern blotting</li>
+          </ul>
+        </div>
+        <div class="stop" style="--c:var(--base-c)">
+          <span class="when" data-i18n="path.4.when">Oct 2017 to Jan 2022</span>
+          <h3 data-i18n="path.4.org">Kharazmi University, Iran</h3>
+          <p class="role" data-i18n="path.4.role">Bachelor's degree in Biotechnology</p>
+        </div>
+      </div>
+
+      <div class="langlist">
+        <div><span data-i18n="lang.en">English</span><span class="dots" role="img" aria-label="5 / 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+        <div><span data-i18n="lang.it">Italian</span><span class="dots" role="img" aria-label="3 / 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+        <div><span data-i18n="lang.fa">Persian</span><span class="dots" role="img" aria-label="5 / 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="contact" id="contact">
+    <div class="wrap">
+      <h2 data-i18n="contact.title">Let's work together</h2>
+      <p data-i18n="contact.d">Have a dataset to analyse, a pipeline to build or a position to fill? Write to me and I will get back to you.</p>
+      <span class="mail ltr" id="mail">shakiba.hamedi01@universitadipavia.it</span>
+      <div class="cta">
+        <button class="btn primary" type="button" id="copy-mail" data-i18n="contact.copy">Copy email address</button>
+        <a class="btn" href="mailto:shakiba.hamedi01@universitadipavia.it" data-i18n="contact.write">Open in mail app</a>
+        <a class="btn" href="Shakiba-Hamedi-CV.pdf" target="_blank" rel="noopener" data-i18n="cv">Download CV (PDF)</a>
+        <a class="btn" href="https://www.linkedin.com/in/shakiba-hamedi-6ab334360/" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://github.com/shakibahamedi" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="ltr">© 2026 Shakiba Hamedi</span>
+    <span data-i18n="foot.role">Computational biologist</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var T = {
+    it: {
+      "nav.about":"Profilo","nav.projects":"Progetti","nav.toolkit":"Strumenti","nav.path":"Percorso","nav.contact":"Contatti",
+      "hero.eyebrow":"Biologa computazionale",
+      "hero.lead":"Trasformo genomica e trascrittomica in risultati su cui un laboratorio può contare: RNA-seq, annotazione di varianti e analisi di elementi trasponibili, in workflow riproducibili.",
+      "hero.avail":"Disponibile per posizioni e progetti freelance","hero.loc":"Pavia, Italia","hero.cta":"Contattami",
+      "about.title":"Profilo",
+      "about.p1":"Sono una biologa computazionale con esperienza in RNA-seq, annotazione di varianti, analisi di elementi trasponibili e workflow riproducibili. Lavoro soprattutto con R/Bioconductor, Nextflow, Bash, BEDTools e Google Cloud, con particolare attenzione alla trascrittomica e alla genomica computazionale.",
+      "about.p2":"Ho iniziato al bancone, tra colture cellulari, PCR e controllo qualità in HPLC, prima di passare alla riga di comando. So da dove arrivano i dati e che cosa la biologia chiede all'analisi.",
+      "facts.based.k":"Sede","facts.based.v":"Pavia, Italia",
+      "facts.study.k":"Studi in corso","facts.study.v":"Laurea magistrale in Molecular Biology and Genetics, curriculum Digital Genetics, Università di Pavia",
+      "facts.focus.k":"Ambito","facts.focus.v":"Trascrittomica e genomica computazionale",
+      "facts.open.k":"Disponibile per","facts.open.v":"Posizioni, collaborazioni di ricerca e analisi freelance",
+      "help.1.t":"Analisi RNA-seq","help.1.d":"Dalle reads grezze all'espressione differenziale con nf-core/rnaseq, Salmon e DESeq2, più analisi di arricchimento con clusterProfiler.",
+      "help.2.t":"Annotazione di varianti","help.2.d":"Elaborazione di VCF con nf-core/sarek e annotazione con VEP, SnpEff e AlphaMissense, con risorse come ClinVar e gnomAD.",
+      "help.3.t":"Pipeline riproducibili","help.3.d":"Workflow Nextflow sotto controllo di versione con Git, eseguiti in locale o su Google Cloud Compute Engine.",
+      "help.4.t":"Report chiari","help.4.d":"Report Quarto e R Markdown in HTML o PDF, con figure ggplot2 pronte da condividere.",
+      "proj.title":"Progetti","proj.ongoing":"In corso",
+      "proj.1.t":"Analisi integrata di genomica e trascrittomica",
+      "proj.1.d":"Un workflow riproducibile che unisce l'elaborazione RNA-seq all'annotazione di varianti con VEP, SnpEff e AlphaMissense. Dati genomici e di espressione genica confluiscono in un unico report Quarto strutturato, facile da interpretare.",
+      "proj.2.t":"Elementi trasponibili negli lncRNA",
+      "proj.2.d":"Analisi degli elementi trasponibili nelle regioni di lncRNA: sovrapposizioni di intervalli genomici, elaborazione di annotazioni BED/GTF/GFF e distribuzione dei TE nei loci di RNA non codificante.",
+      "proj.3.t":"Pipeline riproducibile NGS e ML con Nextflow",
+      "proj.3.d":"Un workflow Nextflow per modellazione statistica e machine learning in R. Confronta in automatico regressione lineare, random forest e KNN con RMSE, R² e MAE, e riporta test di ipotesi e importanza delle variabili.",
+      "kit.title":"Strumenti","kit.core":"Linguaggi e piattaforme","kit.pkgs":"Pacchetti R e Python","kit.rna":"RNA-seq","kit.var":"Analisi di varianti","kit.te":"Elementi trasponibili","kit.viz":"Visualizzazione e report","kit.db":"Database e risorse",
+      "path.title":"Percorso","path.edu":"Formazione","path.work":"Lavoro in laboratorio",
+      "path.1.when":"Nov 2024 – oggi","path.1.role":"Laurea magistrale in Molecular Biology and Genetics, curriculum Digital Genetics",
+      "path.2.org":"Dr. Abidi Pharmaceuticals, Teheran","path.2.role":"Tecnica di laboratorio",
+      "path.2.a":"Controllo qualità di prodotti farmaceutici con HPLC e HPLC-MS","path.2.b":"Saggi chimici e farmaceutici secondo protocolli GMP",
+      "path.3.org":"Università Shahid Beheshti, Teheran","path.3.role":"Assistente di laboratorio",
+      "path.3.a":"Esperimenti di coltura di cellule di tumore al seno e ricerca in corso sul tumore al seno","path.3.b":"Tecniche molecolari tra cui PCR, Western e Southern blotting",
+      "path.4.when":"Ott 2017 – Gen 2022","path.4.org":"Università Kharazmi, Iran","path.4.role":"Laurea triennale in Biotecnologie",
+      "lang.en":"Inglese","lang.it":"Italiano","lang.fa":"Persiano",
+      "gh.title":"Su GitHub","gh.d":"Esercitazioni e repository dei corsi seguiti all'Università di Pavia.",
+      "gh.1":"Esercizi e report personali","gh.2":"Laboratorio avanzato di omica","gh.3":"Variant calling con nf-core/sarek","gh.4":"Statistica e analisi di big data in R",
+      "contact.title":"Lavoriamo insieme",
+      "contact.d":"Hai un dataset da analizzare, una pipeline da costruire o una posizione aperta? Scrivimi e ti risponderò.",
+      "contact.copy":"Copia l'indirizzo email","contact.write":"Apri nell'app di posta","contact.copied":"Indirizzo copiato","contact.fail":"Seleziona l'indirizzo qui sopra e copialo",
+      "cv":"Scarica il CV (PDF)","foot.role":"Biologa computazionale"
+    },
+    ar: {
+      "nav.about":"نبذة","nav.projects":"المشاريع","nav.toolkit":"الأدوات","nav.path":"المسيرة","nav.contact":"تواصل",
+      "hero.eyebrow":"عالمة أحياء حاسوبية",
+      "hero.lead":"أحوّل علم الجينوم والنسخ الجيني إلى نتائج يمكن للمختبر الاعتماد عليها: تحليل RNA-seq وتوصيف المتغيرات الجينية وتحليل العناصر القافزة، ضمن مسارات عمل قابلة للتكرار.",
+      "hero.avail":"متاحة للوظائف ومشاريع العمل الحر","hero.loc":"بافيا، إيطاليا","hero.cta":"تواصل معي",
+      "about.title":"نبذة",
+      "about.p1":"أنا عالمة أحياء حاسوبية، لدي خبرة في تحليل RNA-seq وتوصيف المتغيرات الجينية وتحليل العناصر القافزة وبناء مسارات عمل قابلة للتكرار. أعمل أساسًا باستخدام R/Bioconductor و Nextflow و Bash و BEDTools و Google Cloud، مع تركيز على علم النسخ الجيني وعلم الجينوم الحاسوبي.",
+      "about.p2":"بدأت في المختبر مع زراعة الخلايا و PCR ومراقبة الجودة بتقنية HPLC، ثم انتقلت إلى التحليل الحاسوبي. أعرف من أين تأتي البيانات وما الذي يحتاجه السؤال البيولوجي من التحليل.",
+      "facts.based.k":"الإقامة","facts.based.v":"بافيا، إيطاليا",
+      "facts.study.k":"الدراسة الحالية","facts.study.v":"ماجستير في البيولوجيا الجزيئية وعلم الوراثة، مسار Digital Genetics، جامعة بافيا",
+      "facts.focus.k":"مجال التركيز","facts.focus.v":"علم النسخ الجيني وعلم الجينوم الحاسوبي",
+      "facts.open.k":"متاحة لـ","facts.open.v":"الوظائف والتعاون البحثي والتحليل بنظام العمل الحر",
+      "help.1.t":"تحليل RNA-seq","help.1.d":"من القراءات الخام إلى التعبير الجيني التفاضلي باستخدام nf-core/rnaseq و Salmon و DESeq2، مع تحليل الإثراء عبر clusterProfiler.",
+      "help.2.t":"توصيف المتغيرات الجينية","help.2.d":"معالجة ملفات VCF عبر nf-core/sarek وتوصيفها باستخدام VEP و SnpEff و AlphaMissense، مع الاستعانة بقواعد مثل ClinVar و gnomAD.",
+      "help.3.t":"مسارات عمل قابلة للتكرار","help.3.d":"مسارات Nextflow مع إدارة الإصدارات عبر Git، تعمل محليًا أو على Google Cloud Compute Engine.",
+      "help.4.t":"تقارير واضحة","help.4.d":"تقارير Quarto و R Markdown بصيغة HTML أو PDF، مع رسوم ggplot2 جاهزة للمشاركة.",
+      "proj.title":"المشاريع","proj.ongoing":"قيد التنفيذ",
+      "proj.1.t":"تحليل متكامل للجينوم والنسخ الجيني",
+      "proj.1.d":"مسار عمل قابل للتكرار يجمع بين معالجة RNA-seq وتوصيف المتغيرات باستخدام VEP و SnpEff و AlphaMissense. تُدمج البيانات الجينومية وبيانات التعبير الجيني في تقرير Quarto واحد منظم يسهل تفسيره.",
+      "proj.2.t":"العناصر القافزة في lncRNA",
+      "proj.2.d":"تحليل العناصر القافزة داخل مناطق lncRNA: تقاطع الفترات الجينومية، ومعالجة ملفات التوصيف BED/GTF/GFF، وتوزيع العناصر القافزة عبر مواقع الحمض النووي الريبي غير المشفِّر.",
+      "proj.3.t":"مسار NGS وتعلم آلي قابل للتكرار عبر Nextflow",
+      "proj.3.d":"مسار Nextflow للنمذجة الإحصائية والتعلم الآلي بلغة R. يقارن تلقائيًا بين الانحدار الخطي والغابة العشوائية و KNN باستخدام RMSE و R² و MAE، ويعرض اختبارات الفرضيات وأهمية المتغيرات.",
+      "kit.title":"الأدوات","kit.core":"اللغات والمنصات","kit.pkgs":"حزم R و Python","kit.rna":"تحليل RNA-seq","kit.var":"تحليل المتغيرات","kit.te":"العناصر القافزة","kit.viz":"التمثيل البياني والتقارير","kit.db":"قواعد البيانات والمصادر",
+      "path.title":"المسيرة","path.edu":"التعليم","path.work":"العمل المخبري",
+      "path.1.when":"نوفمبر 2024 – حتى الآن","path.1.role":"ماجستير في البيولوجيا الجزيئية وعلم الوراثة، مسار Digital Genetics",
+      "path.2.org":"شركة Dr. Abidi للأدوية، طهران","path.2.role":"فنية مختبر",
+      "path.2.a":"مراقبة جودة المنتجات الدوائية باستخدام HPLC و HPLC-MS","path.2.b":"إجراء الفحوص الكيميائية والدوائية وفق بروتوكولات GMP",
+      "path.3.org":"جامعة الشهيد بهشتي، طهران","path.3.role":"مساعدة مختبر",
+      "path.3.a":"المساعدة في تجارب زراعة خلايا سرطان الثدي والأبحاث الجارية حوله","path.3.b":"تطبيق تقنيات جزيئية منها PCR و Western blot و Southern blot",
+      "path.4.when":"أكتوبر 2017 – يناير 2022","path.4.org":"جامعة الخوارزمي، إيران","path.4.role":"بكالوريوس في التقنية الحيوية",
+      "lang.en":"الإنجليزية","lang.it":"الإيطالية","lang.fa":"الفارسية",
+      "gh.title":"على GitHub","gh.d":"تمارين ومستودعات مقررات من دراستي في جامعة بافيا.",
+      "gh.1":"تماريني وتقاريري","gh.2":"مختبر الأوميكس المتقدم","gh.3":"استدعاء المتغيرات عبر nf-core/sarek","gh.4":"الإحصاء وتحليل البيانات الضخمة بلغة R",
+      "contact.title":"لنعمل معًا",
+      "contact.d":"هل لديك بيانات تحتاج إلى تحليل، أو مسار عمل تريد بناءه، أو وظيفة شاغرة؟ راسلني وسأرد عليك.",
+      "contact.copy":"نسخ عنوان البريد","contact.write":"فتح في تطبيق البريد","contact.copied":"تم نسخ العنوان","contact.fail":"حدّد العنوان أعلاه وانسخه",
+      "cv":"تحميل السيرة الذاتية (PDF)","foot.role":"عالمة أحياء حاسوبية"
+    },
+    fa: {
+      "nav.about":"درباره من","nav.projects":"پروژه‌ها","nav.toolkit":"ابزارها","nav.path":"مسیر","nav.contact":"تماس",
+      "hero.eyebrow":"زیست‌شناس محاسباتی",
+      "hero.lead":"من ژنومیکس و ترنسکریپتومیکس را به نتایجی تبدیل می‌کنم که آزمایشگاه بتواند به آن تکیه کند: تحلیل RNA-seq، حاشیه‌نویسی واریانت‌ها و تحلیل عناصر جهنده، در قالب جریان‌های کاری تکرارپذیر.",
+      "hero.avail":"آماده برای موقعیت شغلی و پروژه‌های فریلنس","hero.loc":"پاویا، ایتالیا","hero.cta":"تماس با من",
+      "cv":"دانلود رزومه (PDF)",
+      "about.title":"درباره من",
+      "about.p1":"من زیست‌شناس محاسباتی هستم، با تجربه در تحلیل RNA-seq، حاشیه‌نویسی واریانت‌ها، تحلیل عناصر جهنده و ساخت جریان‌های کاری تکرارپذیر. بیشتر با R/Bioconductor، Nextflow، Bash، BEDTools و Google Cloud کار می‌کنم، با تمرکز بر ترنسکریپتومیکس و ژنومیکس محاسباتی.",
+      "about.p2":"کارم را از آزمایشگاه شروع کردم، با کشت سلول، PCR و کنترل کیفیت با HPLC، و بعد به تحلیل محاسباتی رسیدم. می‌دانم داده‌ها از کجا می‌آیند و پرسش زیست‌شناختی از تحلیل چه می‌خواهد.",
+      "facts.based.k":"محل زندگی","facts.based.v":"پاویا، ایتالیا",
+      "facts.study.k":"تحصیلات جاری","facts.study.v":"کارشناسی ارشد زیست‌شناسی مولکولی و ژنتیک، گرایش Digital Genetics، دانشگاه پاویا",
+      "facts.focus.k":"حوزه تمرکز","facts.focus.v":"ترنسکریپتومیکس و ژنومیکس محاسباتی",
+      "facts.open.k":"آماده برای","facts.open.v":"موقعیت‌های شغلی، همکاری پژوهشی و تحلیل فریلنس",
+      "help.1.t":"تحلیل RNA-seq","help.1.d":"از ریدهای خام تا بیان افتراقی با nf-core/rnaseq، Salmon و DESeq2، همراه با تحلیل غنی‌سازی با clusterProfiler.",
+      "help.2.t":"حاشیه‌نویسی واریانت‌ها","help.2.d":"پردازش فایل‌های VCF با nf-core/sarek و حاشیه‌نویسی با VEP، SnpEff و AlphaMissense، با استفاده از منابعی مثل ClinVar و gnomAD.",
+      "help.3.t":"جریان‌های کاری تکرارپذیر","help.3.d":"جریان‌های کاری Nextflow تحت کنترل نسخه با Git، روی سیستم محلی یا Google Cloud Compute Engine.",
+      "help.4.t":"گزارش‌های روشن","help.4.d":"گزارش‌های Quarto و R Markdown با خروجی HTML یا PDF، همراه با نمودارهای ggplot2 آماده اشتراک‌گذاری.",
+      "proj.title":"پروژه‌ها","proj.ongoing":"در حال انجام",
+      "proj.1.t":"تحلیل یکپارچه ژنومیکس و ترنسکریپتومیکس",
+      "proj.1.d":"یک جریان کاری تکرارپذیر که پردازش RNA-seq را با حاشیه‌نویسی واریانت‌ها به کمک VEP، SnpEff و AlphaMissense ترکیب می‌کند. داده‌های ژنومی و بیان ژن در یک گزارش ساختارمند Quarto کنار هم می‌آیند تا تفسیر نتایج ساده باشد.",
+      "proj.2.t":"عناصر جهنده در lncRNA‌ها",
+      "proj.2.d":"تحلیل عناصر جهنده در نواحی lncRNA: هم‌پوشانی بازه‌های ژنومی، پردازش حاشیه‌نویسی‌های BED/GTF/GFF و توزیع عناصر جهنده در جایگاه‌های RNA غیرکدکننده.",
+      "proj.3.t":"جریان کاری تکرارپذیر NGS و یادگیری ماشین با Nextflow",
+      "proj.3.d":"یک جریان کاری Nextflow برای مدل‌سازی آماری و یادگیری ماشین در R. رگرسیون خطی، جنگل تصادفی و KNN را به‌صورت خودکار با RMSE، R² و MAE مقایسه می‌کند و آزمون فرض و اهمیت متغیرها را گزارش می‌دهد.",
+      "kit.title":"ابزارها","kit.core":"زبان‌ها و بسترها","kit.pkgs":"بسته‌های R و Python","kit.rna":"تحلیل RNA-seq","kit.var":"تحلیل واریانت‌ها","kit.te":"عناصر جهنده","kit.viz":"تصویرسازی و گزارش","kit.db":"پایگاه‌های داده و منابع",
+      "path.title":"مسیر","path.edu":"تحصیلات","path.work":"کار آزمایشگاهی",
+      "path.1.when":"نوامبر 2024 تا امروز","path.1.role":"کارشناسی ارشد زیست‌شناسی مولکولی و ژنتیک، گرایش Digital Genetics",
+      "path.2.org":"شرکت داروسازی دکتر عبیدی، تهران","path.2.role":"کارشناس آزمایشگاه",
+      "path.2.a":"کنترل کیفیت محصولات دارویی با HPLC و HPLC-MS","path.2.b":"انجام آزمون‌های شیمیایی و دارویی بر اساس پروتکل‌های GMP",
+      "path.3.org":"دانشگاه شهید بهشتی، تهران","path.3.role":"دستیار آزمایشگاه",
+      "path.3.a":"همکاری در آزمایش‌های کشت سلول سرطان پستان و پژوهش‌های جاری این حوزه","path.3.b":"به‌کارگیری تکنیک‌های مولکولی از جمله PCR، وسترن بلات و ساترن بلات",
+      "path.4.when":"اکتبر 2017 تا ژانویه 2022","path.4.org":"دانشگاه خوارزمی، ایران","path.4.role":"کارشناسی زیست‌فناوری",
+      "lang.en":"انگلیسی","lang.it":"ایتالیایی","lang.fa":"فارسی",
+      "contact.title":"با هم کار کنیم",
+      "contact.d":"داده‌ای برای تحلیل، جریان کاری برای ساختن، یا موقعیت شغلی‌ای برای پر کردن دارید؟ برایم بنویسید تا پاسخ بدهم.",
+      "contact.copy":"کپی نشانی ایمیل","contact.write":"باز کردن در برنامه ایمیل","contact.copied":"نشانی کپی شد","contact.fail":"نشانی بالا را انتخاب و کپی کنید",
+      "foot.role":"زیست‌شناس محاسباتی"
+    }
+  };
+  T.en = {"contact.copied":"Address copied","contact.fail":"Select the address above and copy it"};
+  var nodes = document.querySelectorAll("[data-i18n]");
+  nodes.forEach(function(n){ T.en[n.getAttribute("data-i18n")] = n.textContent; });
+  var current = "en";
+
+  function setLang(l, save){
+    if(!T[l]) l = "en";
+    current = l;
+    document.documentElement.lang = l;
+    document.documentElement.dir = (l === "ar" || l === "fa") ? "rtl" : "ltr";
+    nodes.forEach(function(n){
+      var k = n.getAttribute("data-i18n");
+      n.textContent = T[l][k] || T.en[k];
+    });
+    document.querySelectorAll(".langs button").forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.lang === l ? "true" : "false");
+    });
+    if(save){ try{ localStorage.setItem("sh-lang", l); }catch(e){} }
+  }
+  document.querySelectorAll(".langs button").forEach(function(b){
+    b.addEventListener("click", function(){ setLang(b.dataset.lang, true); });
+  });
+  var start = null;
+  try{ start = localStorage.getItem("sh-lang"); }catch(e){}
+  if(!start){
+    var nav = (navigator.language || "en").slice(0,2).toLowerCase();
+    if(nav === "it" || nav === "ar" || nav === "fa") start = nav;
+  }
+  if(start && start !== "en") setLang(start, false);
+
+  // copy email
+  var copyBtn = document.getElementById("copy-mail");
+  copyBtn.addEventListener("click", function(){
+    var addr = document.getElementById("mail").textContent;
+    function done(key){
+      copyBtn.textContent = T[current][key] || T.en[key];
+      setTimeout(function(){ copyBtn.textContent = T[current]["contact.copy"] || T.en["contact.copy"]; }, 2200);
+    }
+    try{
+      navigator.clipboard.writeText(addr).then(function(){ done("contact.copied"); }, function(){ done("contact.fail"); });
+    }catch(e){ done("contact.fail"); }
+  });
+
+  // decorative read pileup, drawn once per size with a fixed seed
+  var cv = document.getElementById("pileup");
+  function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function draw(){
+    if(!cv) return;
+    var w = cv.clientWidth, h = cv.clientHeight, dpr = window.devicePixelRatio || 1;
+    if(!w || !h) return;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    var c = cv.getContext("2d"); c.scale(dpr, dpr); c.clearRect(0,0,w,h);
+    var r = rng(20241101), bases = ["#62c482","#5fa8ee","#f0b84a","#ee736f"];
+    var covH = 34, rowH = 7, gap = 3, top = covH + 12;
+    var rows = Math.floor((h - top - 6) / (rowH + gap));
+    var bins = Math.ceil(w / 4), cov = new Array(bins).fill(0), reads = [];
+    for(var y = 0; y < rows; y++){
+      var x = -r() * 80;
+      while(x < w){
+        var len = 60 + r() * 90;
+        if(r() > 0.22 - y * 0.012 && r() > y / (rows * 1.6)){
+          reads.push([x, y, len, r()]);
+          for(var b = Math.max(0, Math.floor(x/4)); b < Math.min(bins, Math.ceil((x+len)/4)); b++) cov[b]++;
+        }
+        x += len + 6 + r() * 30;
+      }
+    }
+    var max = Math.max.apply(null, cov) || 1;
+    c.fillStyle = "rgba(79,209,197,.55)";
+    for(var i = 0; i < bins; i++){ var ch = cov[i] / max * covH; c.fillRect(i*4, covH + 4 - ch, 3, ch); }
+    reads.forEach(function(rd){
+      var ry = top + rd[1] * (rowH + gap);
+      c.fillStyle = rd[3] > 0.5 ? "rgba(147,170,179,.42)" : "rgba(147,170,179,.26)";
+      c.fillRect(rd[0], ry, rd[2], rowH);
+      if(rd[3] > 0.72){ c.fillStyle = bases[Math.floor(rd[3] * 97) % 4]; c.fillRect(rd[0] + rd[2] * ((rd[3] * 7) % 1), ry, 3, rowH); }
+    });
+    // one shared variant column
+    var vx = Math.round(w * 0.63);
+    c.fillStyle = "#f0b84a";
+    reads.forEach(function(rd){ if(rd[0] < vx && rd[0] + rd[2] > vx + 3 && rd[3] > 0.35) c.fillRect(vx, top + rd[1]*(rowH+gap), 3, rowH); });
+  }
+  draw();
+  var to; window.addEventListener("resize", function(){ clearTimeout(to); to = setTimeout(draw, 150); });
+})();
+</script>
+</body>
+</html>
